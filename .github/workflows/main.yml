@@ -1,42 +1,14 @@
-name: CI/CD Pipeline for React and Python APIs
+name: Deploy Frontend and Backend to Azure App Services
 
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the main branch
+      - main
 
 jobs:
-  # Deploy React App to Linux App Service
-  deploy-frontend:
-    runs-on: self-hosted  # Specify your self-hosted runner
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v3
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'  # Specify the Node.js version
-
-    - name: Install dependencies
-      working-directory: frontend
-      run: npm install
-
-    - name: Build the React app
-      working-directory: frontend
-      run: npm run build
-
-    - name: Deploy to Azure Web App (Linux)
-      uses: azure/webapps-deploy@v3
-      with:
-        app-name: ${{ secrets.REACT_APP_SERVICE_NAME }}
-        slot-name: 'production'
-        publish-profile: ${{ secrets.REACT_APP_PUBLISH_PROFILE }}
-        package: frontend/build
-
-  # Deploy Python API to Windows App Service
   deploy-backend:
-    runs-on: self-hosted  # Specify your self-hosted runner
+    runs-on: self-hosted
+
     steps:
     - name: Check out code
       uses: actions/checkout@v3
@@ -46,15 +18,42 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Install dependencies
-      working-directory: backend
+    - name: Install backend dependencies
       run: |
+        cd backend
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Deploy to Azure Web App (Windows)
+    - name: Deploy Backend to Azure Web App (Linux)
       uses: azure/webapps-deploy@v3
       with:
-        app-name: ${{ secrets.PYTHON_APP_SERVICE_NAME }}
+        app-name: ${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}
         slot-name: 'production'
-        publish-profile: ${{ secrets.PYTHON_APP_PUBLISH_PROFILE }}
+        publish-profile: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
+        package: .
+
+  deploy-frontend:
+    runs-on: self-hosted
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install frontend dependencies and build
+      run: |
+        cd frontend
+        npm install
+        npm run build
+
+    - name: Deploy Frontend to Azure Web App (Linux)
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AZURE_FRONTEND_PUBLISH_PROFILE }}
+        package: './frontend/build'
