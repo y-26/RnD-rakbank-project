@@ -1,55 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 function App() {
-  const [items, setItems] = useState([]);
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
+  const [prices, setPrices] = useState([]);
+  const [itemName, setItemName] = useState("");
+  const [price, setPrice] = useState("");
 
   useEffect(() => {
-    fetchItems();
+    fetchPrices();
   }, []);
 
-  const fetchItems = async () => {
-    const response = await fetch('/api/items/');
+  const fetchPrices = async () => {
+    const response = await fetch("/prices/");
     const data = await response.json();
-    setItems(data);
+    setPrices(Object.entries(data));
   };
 
-  const addItem = async () => {
-    const response = await fetch('/api/items/', {
-      method: 'POST',
+  const addPrice = async () => {
+    const response = await fetch("/prices/", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, price: parseFloat(price) }),
+      body: JSON.stringify({ item_name: itemName, price: parseFloat(price) }),
     });
-
     if (response.ok) {
-      fetchItems();
-      setName('');
-      setPrice('');
-    } else {
-      console.error('Failed to add item');
+      fetchPrices();
+      setItemName("");
+      setPrice("");
     }
   };
 
   return (
     <div>
-      <h1>Items and Prices</h1>
+      <h1>Price List</h1>
       <ul>
-        {Object.keys(items).map(item => (
-          <li key={item}>
-            {item}: ${items[item]}
-          </li>
+        {prices.map(([name, price]) => (
+          <li key={name}>{name}: ${price.toFixed(2)}</li>
         ))}
       </ul>
 
-      <h2>Add Item</h2>
+      <h2>Add a new price</h2>
       <input
         type="text"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        placeholder="Item Name"
+        value={itemName}
+        onChange={(e) => setItemName(e.target.value)}
       />
       <input
         type="text"
@@ -57,7 +52,7 @@ function App() {
         value={price}
         onChange={(e) => setPrice(e.target.value)}
       />
-      <button onClick={addItem}>Add Item</button>
+      <button onClick={addPrice}>Add Price</button>
     </div>
   );
 }
