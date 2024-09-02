@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-function Ap() {
+function App() {
   const [prices, setPrices] = useState([]);
   const [itemName, setItemName] = useState("");
   const [price, setPrice] = useState("");
